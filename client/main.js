@@ -59,7 +59,7 @@ Template.stub.helpers({
 
 Template.stub.events({
   'click button'(event, instance) {
-    //call plugin
+    //call plugin -- change this to the name of whatever plugin you want to call
     navigator.device.capture.captureVideo(instance.onPluginSuccess, instance.onPluginError, instance.pluginOptions);
   },
 });
