@@ -10,9 +10,9 @@ From project directory, run the following to compile the app as an XCODE project
 `meteor run ios-device`
 
 ## Install cordova plugin
-From project directory, run the following (note inclusion of version number)
+From project directory, run the following swapping-in the name of desired cordova plugin (note inclusion of version number)
 
 `meteor add cordova:plugin-name@0.0.1`
 
 ## Update cordova plugin options
-All code for calling plugins and handling success/error callbacks is in `main.js`
+All code for calling plugins and handling success/error callbacks is in `client/main.js`
