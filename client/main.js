@@ -35,18 +35,22 @@ Template.stub.onCreated(function stubOnCreated() {
   //define options for the plugin
   this.pluginOptions = {
     limit: 1, //number of recordings that can be captured
-    duration: 60, //max length in seconds
-    players: LocalPlayers.find().fetch() //player objects with name, avatar, etc
+    maxDuration: 60, //max length in seconds
+    players: LocalPlayers.find().fetch(), //player objects with name, avatar, etc
+    orientation: 'landscape', // allowed orientation: 'landscape' | 'portrait' | 'both'
+    resolution: '960x540', // video resolution 
+    bitrate: 1.5 //bitrate in Megabits per second
   }
 
   //pass success data to this when plugin exits successfully
-  this.onPluginSuccess = function(capturedStuff) {
-    console.log(capturedStuff);
+  //`videoPath` is the path to the recorded video on the local system
+  //`cuepoints` is an array of captured moments with:
+  // (1) playerIds, (2) universal timestamp of tap event, (3) # seconds into video of tap event
+  this.onPluginSuccess = function(videoPath, cuepoints) {
   }
 
   //pass error to this when plugin exits unsuccessfully
   this.onPluginError = function(error) {
-    console.log(error);
   }
 
 });
@@ -59,6 +63,7 @@ Template.stub.helpers({
 
 Template.stub.events({
   'click button'(event, instance) {
+    console.log(instance.pluginOptions);
     //call plugin -- change this to the name of whatever plugin you want to call
     navigator.device.capture.captureVideo(instance.onPluginSuccess, instance.onPluginError, instance.pluginOptions);
   },
