@@ -14,5 +14,7 @@ From project directory, run the following swapping-in the name of desired cordov
 
 `meteor add cordova:plugin-name@0.0.1`
 
+More on Meteor and Cordova here: https://guide.meteor.com/mobile.html#introduction
+
 ## Update cordova plugin options
 All code for calling plugins and handling success/error callbacks is in `client/main.js`
