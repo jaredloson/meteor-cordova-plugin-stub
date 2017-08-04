@@ -1,4 +1,13 @@
 /* CSS declarations go here */
+#number-players, #launch-plugin {
+  font-size: 20px;
+  color: #000;
+  display: block;
+  margin: 3rem auto;
+  width: 200px;
+  border: 1px solid;
+}
+
 .centered-container {
     position: absolute;
     top: 50%;

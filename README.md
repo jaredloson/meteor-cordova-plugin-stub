@@ -16,5 +16,10 @@ From project directory, run the following swapping-in the name of desired cordov
 
 More on Meteor and Cordova here: https://guide.meteor.com/mobile.html#introduction
 
+More on installing a local version of a Cordova plugin into a Meteor project: https://stackoverflow.com/questions/35938360/add-cordova-plugin-to-meteor-from-local-path
+
 ## Update cordova plugin options
+
+Fake player data is generated and passed into the plugin (can select from 1-20 players).
+
 All code for calling plugins and handling success/error callbacks is in `client/main.js`

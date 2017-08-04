@@ -9,7 +9,16 @@
 <template name="stub">
   <div class="centered-container">
     {{#if isCordova}}
-      <button>Launch plugin</button>
+      {{#if loading}}
+        <div>Loading...</div>
+      {{else}}
+        <select id="number-players">
+          {{#each numberPlayersOptions}}
+            <option value="{{this}}">{{this}}</option>
+          {{/each}}
+        </select>
+        <button id="launch-plugin">Launch plugin</button>
+      {{/if}}
     {{else}}
       <p>Must be in Cordova to use this app</p>
       <p>See here: <a href="https://guide.meteor.com/mobile.html#running-on-ios" target="_blank">https://guide.meteor.com/mobile.html#running-on-ios</a></p>
