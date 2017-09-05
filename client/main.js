@@ -6,9 +6,9 @@ import './main.html';
 
 Template.stub.onCreated(function stubOnCreated() {
   
-  // if (!Meteor.isCordova) {
-  //   return false;
-  // }
+  if (!Meteor.isCordova) {
+    return false;
+  }
 
   this.loading = new ReactiveVar(false);
 
@@ -106,8 +106,7 @@ Template.stub.onCreated(function stubOnCreated() {
 
 Template.stub.helpers({
   isCordova() {
-    //return Meteor.isCordova;
-    return true;
+    return Meteor.isCordova;
   },
   numberPlayersOptions() {
     return Template.instance().numberPlayersOptions;
