@@ -11,6 +11,7 @@ Template.stub.onCreated(function stubOnCreated() {
   }
 
   this.loading = new ReactiveVar(false);
+  this.videoPath = new ReactiveVar(null);
 
   //create a local mongo collection to store players
   LocalPlayers = new Mongo.Collection(null);
@@ -71,11 +72,12 @@ Template.stub.onCreated(function stubOnCreated() {
         // note: for now, maxDuration, resolution, orientation and bitrate are hardcoded
         callback({
           limit: 1, //number of recordings that can be captured
-          maxDuration: 60 * 60, //max length in seconds
+          duration: 60 * 60, //max length in seconds
           players: LocalPlayers.find().fetch(), //player objects with name, avatar, etc
-          orientation: 'landscape', // allowed orientation: 'landscape' | 'portrait' | 'both'
+          orientation: 'both', // allowed orientation: 'landscape' | 'portrait' | 'both'
           resolution: '960x540', // video resolution 
-          bitrate: 1.5 //bitrate in Megabits per second
+          bitrate: 1.5, //bitrate in Megabits per second
+          frontcamera: false
         });
 
         self.loading.set(false);
@@ -92,9 +94,8 @@ Template.stub.onCreated(function stubOnCreated() {
   //   players: Array (array of player objects that user selected after each tap)
   // }
 
-  this.onPluginSuccess = function(videoPath, moments) {
-    console.log(videoPath);
-    console.log(moments);
+  this.onPluginSuccess = function(data) {
+    instance.videoPath.set(data.videoPath);
   }
 
   //pass error to this when plugin exits unsuccessfully
@@ -113,6 +114,9 @@ Template.stub.helpers({
   },
   loading() {
     return Template.instance().loading.get();
+  },
+  videoPath() {
+    return Template.instance().videoPath.get();
   }
 });
 
@@ -126,7 +130,10 @@ Template.stub.events({
     instance.loading.set(true);
     instance.getOptions(function(options) {
       //call plugin -- change this to the name of whatever plugin you want to call
-      navigator.device.capture.captureVideo(instance.onPluginSuccess, instance.onPluginError, options);
+      window.plugins.legendscapture.captureVideo(function(data) {
+        instance.videoPath.set('/local-filesystem' + data.videoPath);
+      },
+      instance.onPluginError.bind(instance), options);
     });
   },
 });

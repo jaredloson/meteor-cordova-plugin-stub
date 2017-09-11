@@ -12,6 +12,11 @@
       {{#if loading}}
         <div>Loading...</div>
       {{else}}
+        {{#if videoPath}}
+          <video class="video-player__video" playsinline>
+            <source src="{{videoPath}}" type='video/mp4'>
+          </video>
+        {{/if}}
         <select id="number-players">
           {{#each numberPlayersOptions}}
             <option value="{{this}}">{{this}}</option>
