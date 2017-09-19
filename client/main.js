@@ -7,36 +7,27 @@ import './main.html';
 Template.stub.onCreated(function stubOnCreated() {
   
   if (!Meteor.isCordova) {
-    return false;
+    //return false;
   }
 
   this.loading = new ReactiveVar(false);
   this.videoPath = new ReactiveVar(null);
+  this.videoInfo = new ReactiveVar(null);
+  this.resolution = new ReactiveVar('low');
+  this.bitrate = new ReactiveVar(null);
+  
+  // this.videoPath = new ReactiveVar('video.mp4');
+  // this.videoInfo = new ReactiveVar({
+  //   width: 1920,
+  //   height: 1080,
+  //   orientation: 'landscape', // will be portrait or landscape
+  //   duration: 3.541, // duration in seconds
+  //   size: 6830126, // size of the video in bytes
+  //   bitrate: 15429777 // bitrate of the video in bits per second
+  // });
 
   //create a local mongo collection to store players
   LocalPlayers = new Mongo.Collection(null);
-
-  //use `randomUser` service to get some fake player data
-  HTTP.call('GET', 'https://randomuser.me/api', 
-    {params: {results: 20, nat: 'us'}},
-    (error, data) => {
-      data.data.results.forEach(function(user, index, array) {
-        let jerseyColor;
-        let teamName;
-        Random.fraction() >= 0.5 ? jerseyColor = 'light' : jerseyColor = 'dark';
-        Random.fraction() >= 0.5 ? teamName = 'Team 1' : teamName = 'Team 2';
-        LocalPlayers.insert({
-          playerId: Random.id(),
-          firstName: user.name.first,
-          lastName: user.name.last,
-          avatar: user.picture.large,
-          number: Math.floor(Random.fraction() * 90 + 10),
-          jersey: jerseyColor,
-          teamName: teamName,
-        });
-      });
-    }
-  );
 
   // allow populating number of players from 1-20
   this.numberPlayers = new ReactiveVar(1);
@@ -54,17 +45,15 @@ Template.stub.onCreated(function stubOnCreated() {
       {params: {results: self.numberPlayers.get(), nat: 'us'}},
       (error, data) => {
         data.data.results.forEach(function(user, index, array) {
-          let jerseyColor;
           let teamName;
-          Random.fraction() >= 0.5 ? jerseyColor = 'light' : jerseyColor = 'dark';
           Random.fraction() >= 0.5 ? teamName = 'Team 1' : teamName = 'Team 2';
           LocalPlayers.insert({
-            playerId: Random.id(),
+            _id: Random.id(),
             firstName: user.name.first,
             lastName: user.name.last,
             avatar: user.picture.large,
-            number: Math.floor(Random.fraction() * 90 + 10),
-            jersey: jerseyColor,
+            number: String( Math.floor(Random.fraction() * 90 + 10) ),
+            jersey: '#cccccc',
             teamName: teamName,
           });
         });
@@ -75,8 +64,8 @@ Template.stub.onCreated(function stubOnCreated() {
           duration: 60 * 60, //max length in seconds
           players: LocalPlayers.find().fetch(), //player objects with name, avatar, etc
           orientation: 'both', // allowed orientation: 'landscape' | 'portrait' | 'both'
-          resolution: '960x540', // video resolution 
-          bitrate: 1.5, //bitrate in Megabits per second
+          resolution: self.resolution.get(), // video resolution 
+          bitrate: parseFloat( self.bitrate.get() ), //bitrate in Megabits per second
           frontcamera: false
         });
 
@@ -85,55 +74,118 @@ Template.stub.onCreated(function stubOnCreated() {
     );
   }
 
-  //pass success data to this when plugin exits successfully
-  //`videoPath` is the path to the recorded video on the local system
-  //`moments` is an array of captured moments formatted like:
-  // {
-  //   cuepoint: Number (number of seconds into video that the user tapped),
-  //   timestamp: Datetime (Universal timestamp of when user tapped),
-  //   players: Array (array of player objects that user selected after each tap)
-  // }
+  this.getClipInfo = function(path) {
+    const self = this;
+    VideoEditor.getVideoInfo(
+      (info) => {
+        console.log(info);
+        self.videoInfo.set(info);
+      },
+      (err) => {
+        console.log('error getting video info');
+        console.log(err);
+      },
+      {
+        fileUri: path
+      }
+    );
+  },
 
-  this.onPluginSuccess = function(data) {
-    instance.videoPath.set(data.videoPath);
+  //SAVE VIDEO
+  this.saveVideo = function() {
+    cordova.plugins.photoLibrary.saveVideo(this.videoPath.get(), 'Legends of Rec', this.onSaveVideoSuccess.bind(this), this.onSaveVideoError.bind(this));
   }
 
-  //pass error to this when plugin exits unsuccessfully
-  this.onPluginError = function(error) {
-    console.log(error);
+  this.onSaveVideoSuccess = function() {
+    alert('video saved to Legends of Rec album');
+  }
+  
+  this.onSaveVideoError = function(err) {
+    if (err.startsWith('Permission')) {
+      this.requestAuthorization();
+    } else {
+      alert('unable to save video');
+      console.log(err);
+    }
+  }
+  
+  this.requestAuthorization = function() {
+    const self = this;
+    cordova.plugins.photoLibrary.requestAuthorization(
+      () => {
+        self.saveVideo();
+      },
+      (err) => {
+        console.log('User did not grant permission');
+        console.log(err);
+      },
+      {
+        read: true,
+        write: true
+      }
+    );
   }
 
 });
 
 Template.stub.helpers({
   isCordova() {
-    return Meteor.isCordova;
+    //return Meteor.isCordova;
+    return true;
   },
   numberPlayersOptions() {
     return Template.instance().numberPlayersOptions;
+  },
+  resolutions() {
+    return ['low','medium','high','352x288','640x480','960x540'];
   },
   loading() {
     return Template.instance().loading.get();
   },
   videoPath() {
     return Template.instance().videoPath.get();
+  },
+  videoInfo() {
+    return Template.instance().videoInfo.get();
   }
 });
 
 Template.stub.events({
-  'change select'(event, instance) {
+  'change select#number-players'(event, instance) {
     var el = document.getElementById('number-players');
     instance.numberPlayers.set(el.options[el.selectedIndex].value);
   },
-  'click button'(event, instance) {
+  'change select#resolution'(event, instance) {
+    var el = document.getElementById('resolution');
+    instance.resolution.set(el.options[el.selectedIndex].value);
+  },
+  'change input#bitrate'(event, instance) {
+    var el = document.getElementById('resolution');
+    instance.bitrate.set(document.getElementById('bitrate').value);
+  },
+  'click button#launch-plugin'(event, instance) {
+    if (!instance.bitrate.get()) {
+      alert('Please select a bitrate');
+      return false;
+    }
     LocalPlayers.remove({});
     instance.loading.set(true);
     instance.getOptions(function(options) {
+      console.log(options)
       //call plugin -- change this to the name of whatever plugin you want to call
-      window.plugins.legendscapture.captureVideo(function(data) {
-        instance.videoPath.set('/local-filesystem' + data.videoPath);
-      },
-      instance.onPluginError.bind(instance), options);
+      window.plugins.legendscapture.captureVideo(
+        function(data) {
+          instance.videoPath.set(data.videoPath);
+          instance.getClipInfo(data.videoPath);
+        },
+        function(err) {
+          console.log('error exiting video capture');
+          console.log(error);
+        },
+      options);
     });
   },
+  'click #save-video'(event, instance) {
+    instance.saveVideo(instance.videoPath.get());
+  }
 });

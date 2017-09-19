@@ -7,21 +7,40 @@
 </body>
 
 <template name="stub">
-  <div class="centered-container">
+  <div class="stub-container">
     {{#if isCordova}}
       {{#if loading}}
         <div>Loading...</div>
       {{else}}
         {{#if videoPath}}
-          <video class="video-player__video" playsinline>
-            <source src="{{videoPath}}" type='video/mp4'>
+          <video class="video-player__video" preload="auto" controls playsinline>
+            <source src="/local-filesystem{{videoPath}}" type='video/mp4'>
           </video>
+          {{#with videoInfo}}
+            <p>width: {{width}}</p>
+            <p>height: {{height}}</p>
+            <p>orientation: {{orientation}}</p>
+            <p>duration: {{duration}}</p>
+            <p>size: {{size}}</p>
+            <p>bitrate: {{bitrate}}</p>
+          {{/with}}
+          <button id="save-video">Save Video</button>
+          <br><br><br><br>
         {{/if}}
+        <label>Players</label>
         <select id="number-players">
           {{#each numberPlayersOptions}}
             <option value="{{this}}">{{this}}</option>
           {{/each}}
         </select>
+        <label>Resolution</label>
+        <select id="resolution">
+          {{#each resolutions}}
+            <option value="{{this}}">{{this}}</option>
+          {{/each}}
+        </select>
+        <label>Bitrate</label>
+        <input id="bitrate" type="number" step=".1" name="bitrate" placeholder="2.0" />
         <button id="launch-plugin">Launch plugin</button>
       {{/if}}
     {{else}}

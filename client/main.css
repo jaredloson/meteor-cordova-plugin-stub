@@ -1,17 +1,23 @@
 /* CSS declarations go here */
-#number-players, #launch-plugin {
+#number-players, #resolution, #bitrate {
   font-size: 20px;
   color: #000;
   display: block;
-  margin: 3rem auto;
+  margin: 0 auto 1rem auto;
   width: 200px;
   border: 1px solid;
 }
 
-.centered-container {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    text-align: center;
+#launch-plugin {
+  margin-top: 3rem;
+}
+
+.stub-container {
+  margin: 40px 20px;
+  text-align: center;
+}
+
+.video-player__video {
+  display: block;
+  width: 100%;
 }
